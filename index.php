@@ -4,6 +4,8 @@ error_reporting(-1);
 ini_set("display_errors", 1);
 echo "CO-ROUTINE EXAMPLE. WEBSERVER" . PHP_EOL;
 
+chdir(__DIR__);
+
 require_once('lib/Scheduler.php');
 require_once('lib/Task.php');
 require_once('lib/stackedCoroutine.php');
