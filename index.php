@@ -1,5 +1,8 @@
 <?php
 
+// Let's ensure we have optimal performance. Set this simple thing
+date_default_timezone_set('Africa/Johannesburg');
+
 error_reporting(-1);
 ini_set("display_errors", 1);
 echo "CO-ROUTINE EXAMPLE. WEBSERVER" . PHP_EOL;
@@ -13,6 +16,7 @@ require_once('lib/systemCalls.php');
 require_once('lib/coSocket.php');
 
 echo "LIBS LOADED" . PHP_EOL;
+
 
 function server($port) {
     echo "SERVER LISTENING ON: $port" . PHP_EOL . PHP_EOL;;
@@ -28,6 +32,17 @@ function server($port) {
             handleClient(yield $socket->accept())
         );
     }
+}
+
+
+function loadTemplateFile($template, $vars){
+    extract($vars, EXTR_OVERWRITE);
+    $output = '';
+    ob_start();
+    require $template;
+    $output = ob_get_contents();
+    ob_end_clean();
+    return $output;
 }
 
 
@@ -63,11 +78,21 @@ function handleClient($socket) {
         $input = "/index.html";
     }
 
+    if ($input == "/test") {
+        $input = "/test.php";
+    }
+
     $input = ".$input";
 
     if (file_exists($input) && is_readable($input)) {
         print "Serving $input\n";
-        $contents = file_get_contents($input);
+
+        if (strstr($input, '.php')) {
+            $contents = loadTemplateFile($input, []);
+        } else {
+            $contents = file_get_contents($input);
+        }
+
         $output = "HTTP/1.0 200 OK\r\nServer: APatchyServer\r\nConnection: close\r\nContent-Type: $mime\r\n\r\n$contents";
     } else {
         $contents = "The file you requested does not exist. Sorry!";
